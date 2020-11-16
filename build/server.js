@@ -28,7 +28,6 @@ var app_1 = __importDefault(require("./app"));
 var port = process.env.PORT || 3000;
 app_1.default.set('port', port);
 var server = http.createServer(app_1.default);
-console.log(process.env.NODE_ENV);
 var errorHandler = function (error) {
     if (error.syscall !== 'listen') {
         throw error;
