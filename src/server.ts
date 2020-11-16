@@ -1,4 +1,3 @@
-/* globals NodeJS */
 import * as http from 'http';
 import app from './app';
 
