@@ -1,6 +1,6 @@
-import * as Mongoose from 'mongoose';
+import { Schema, Document, model } from 'mongoose';
 
-const criminalCaseSchema: Mongoose.Schema = new Mongoose.Schema({
+const criminalCaseSchema: Schema = new Schema({
   criminalCaseNumber: {
     type: String, required: true, index: true, unique: true, maxlength: 10,
   },
@@ -9,4 +9,11 @@ const criminalCaseSchema: Mongoose.Schema = new Mongoose.Schema({
   prisoner: [{ type: String, required: true, maxlength: 10 }],
 });
 
-export default Mongoose.model('CriminalCase', criminalCaseSchema);
+export interface CriminalCase extends Document {
+  criminalCaseNumber: string;
+  juridictionName?: string;
+  dateOfCriminalCase?: Date;
+  prisoner: Array<string>;
+}
+
+export default model<CriminalCase>('CriminalCaseModel', criminalCaseSchema);
