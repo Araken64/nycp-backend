@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/Araken64/nycp-backend#readme",
   "dependencies": {
+    "body-parser": "^1.19.0",
     "express": "^4.17.1",
     "mongoose": "^5.10.14"
   },
