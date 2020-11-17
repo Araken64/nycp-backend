@@ -1,5 +1,5 @@
 import * as Mongoose from 'mongoose';
-import CriminalCase from './CriminalCase';
+import CriminalCaseModel from './CriminalCase';
 
 const prisonerSchema: Mongoose.Schema = new Mongoose.Schema({
   prisonFileNumber: {
@@ -12,7 +12,7 @@ const prisonerSchema: Mongoose.Schema = new Mongoose.Schema({
   dateOfIncaceration: { type: Date },
   motiveLabel: { type: String, maxlength: 50, required: true },
   juridictionName: { type: String, maxlength: 30, required: true },
-  criminalCase: { type: [CriminalCase], required: true },
+  criminalCase: { type: [CriminalCaseModel], required: true },
   decision:
   {
     type: [
