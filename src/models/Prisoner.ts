@@ -1,9 +1,9 @@
-import * as Mongoose from 'mongoose';
-import CriminalCaseModel from './CriminalCase';
+import { Schema, Document, model } from 'mongoose';
+import CriminalCaseModel, { CriminalCase } from './CriminalCase';
 
-const prisonerSchema: Mongoose.Schema = new Mongoose.Schema({
+const prisonerSchema: Schema = new Schema({
   prisonFileNumber: {
-    type: String, maxlength: 10, index: true, unique: true,
+    type: String, maxlength: 10, index: true, unique: true, required: true,
   },
   givenName: { type: String, maxlength: 30 },
   surname: { type: String, maxlength: 30 },
@@ -12,7 +12,7 @@ const prisonerSchema: Mongoose.Schema = new Mongoose.Schema({
   dateOfIncaceration: { type: Date },
   motiveLabel: { type: String, maxlength: 50, required: true },
   juridictionName: { type: String, maxlength: 30, required: true },
-  criminalCase: { type: [CriminalCaseModel], required: true },
+  criminalCase: { type: [CriminalCaseModel] },
   decision:
   {
     type: [
@@ -26,4 +26,24 @@ const prisonerSchema: Mongoose.Schema = new Mongoose.Schema({
   },
 });
 
-export default Mongoose.model('Prisoner', prisonerSchema);
+export interface Decision extends Document {
+  type: string;
+  dateOfDecision: Date;
+  duration: number;
+  dateOfFinalDischarge: Date;
+}
+
+export interface Prisoner extends Document {
+  prisonFileNumber: string;
+  givenName?: string;
+  surname?: string;
+  dateOfBirth?: Date;
+  placeOfBirth?: Date;
+  dateOfIncarceration?: Date;
+  motiveLabel: string;
+  juridictionName: string;
+  criminalCase?: Array<CriminalCase>;
+  decision?: Array<Decision>;
+}
+
+export default model<Prisoner>('PrisonerModel', prisonerSchema);
