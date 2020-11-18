@@ -6,7 +6,7 @@ const criminalCaseSchema: Schema = new Schema({
   },
   juridictionName: { type: String, maxlength: 30 },
   dateOfCriminalCase: { type: Date, max: Date.now },
-  prisoner: [{ type: String, required: true, maxlength: 10 }],
+  prisoner: { type: [String], maxlength: 10 },
 });
 
 export interface CriminalCase extends Document {
