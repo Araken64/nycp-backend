@@ -5,6 +5,8 @@ import bodyParser from 'body-parser';
 import casesRoutes from './routes/criminalcases';
 import prisonerRoutes from './routes/prisoners';
 
+mongoose.set('useCreateIndex', true);
+
 mongoose.connect('mongodb+srv://elethuillier:6PCPBuIfOfCVng3c@learningcluster.csr6l.mongodb.net/nycpdb?retryWrites=true&w=majority',
   { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connexion à MongoDB réussie'))
