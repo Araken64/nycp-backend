@@ -10,6 +10,8 @@ export const createCriminalCase = (req: Request, res: Response) => {
     .catch((error) => res.status(400).json({ error }));
 };
 
-export const getAllCriminalCases = () => {
-
+export const getAllCriminalCases = (req: Request, res: Response) => {
+  CriminalCaseModel.find()
+    .then((criminalcases) => res.status(200).json(criminalcases))
+    .catch((error) => res.status(400).json({ error }));
 };
