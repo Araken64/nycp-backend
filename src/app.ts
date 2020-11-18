@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 
 import casesRoutes from './routes/criminalcases';
+import prisonerRoutes from './routes/prisoners';
 
 mongoose.connect('mongodb+srv://elethuillier:6PCPBuIfOfCVng3c@learningcluster.csr6l.mongodb.net/nycpdb?retryWrites=true&w=majority',
   { useNewUrlParser: true, useUnifiedTopology: true })
@@ -21,5 +22,7 @@ app.use((req, res, next) => {
 app.use(bodyParser.json());
 
 app.use('/api/criminalcases', casesRoutes);
+
+app.use('/api/prisoners', prisonerRoutes);
 
 export default app;
