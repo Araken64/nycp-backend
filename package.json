@@ -8,7 +8,7 @@
     "start": "node build/server",
     "tsc": "tsc -w",
     "nodemon": "nodemon build/server",
-    "dev": "concurrently \"npm run tsc\" \"npm run nodemon\""
+    "dev": "concurrently \"npm run tsc -w\" \"npm run nodemon\""
   },
   "jest": {
     "verbose": true,
