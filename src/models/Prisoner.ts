@@ -19,7 +19,7 @@ const prisonerSchema: Schema = new Schema({
       {
         type: { type: String, maxlength: 1, required: true },
         dateOfDecision: { type: Date },
-        duration: { type: Number },
+        duration: { type: Number, min: 0 },
         dateOfFinalDischarge: { type: Date },
       },
     ],
