@@ -12,7 +12,7 @@ const prisonerSchema: Schema = new Schema({
   dateOfIncaceration: { type: Date },
   motiveLabel: { type: String, maxlength: 50, required: true },
   juridictionName: { type: String, maxlength: 30, required: true },
-  criminalCase: { type: [String] }, // TODO maxlength = 10
+  criminalCase: { type: [String], maxlength: 10 },
   decision:
   {
     type: [
