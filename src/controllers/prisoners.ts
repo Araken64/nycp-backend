@@ -17,14 +17,14 @@ export const getAllPrisoners = (req: Request, res: Response) => {
 };
 
 export const updatePrisoner = (req: Request, res: Response) => {
-  PrisonerModel.updateOne({ prisonFileNumber: req.params.pFileNumber },
-    { ...req.body, prisonFileNumber: req.params.pFileNumber, _id: req.params.id })
+  PrisonerModel.updateOne({ prisonFileNumber: req.params.prisonFileNumber },
+    { ...req.body, prisonFileNumber: req.params.prisonFileNumber, _id: req.params.id })
     .then(() => res.status(200).json({ message: 'Object modified' }))
     .catch((error) => res.status(400).json({ error }));
 };
 
 export const deletePrisoner = (req: Request, res: Response) => {
-  PrisonerModel.deleteOne({ prisonFileNumber: req.params.pFileNumber })
+  PrisonerModel.deleteOne({ prisonFileNumber: req.params.prisonFileNumber })
     .then(() => res.status(200).json({ message: 'Object deleted' }))
     .catch((error) => res.status(400).json({ error }));
 };
