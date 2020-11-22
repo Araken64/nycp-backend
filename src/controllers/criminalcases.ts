@@ -15,3 +15,16 @@ export const getAllCriminalCases = (req: Request, res: Response) => {
     .then((criminalcases) => res.status(200).json(criminalcases))
     .catch((error) => res.status(400).json({ error }));
 };
+
+export const modifyCriminalCase = (req: Request, res: Response) => {
+  CriminalCaseModel.updateOne({ criminalCaseNumber: req.params.criminalCaseNumber },
+    { ...req.body })
+    .then(() => res.status(200).json({ message: 'Object modified !' }))
+    .catch((error) => res.status(400).json({ error }));
+};
+
+export const deleteCriminalCase = (req: Request, res: Response) => {
+  CriminalCaseModel.deleteOne({ criminalCaseNumber: req.params.criminalCaseNumber })
+    .then(() => res.status(200).json({ message: 'Object deleted !' }))
+    .catch((error) => res.status(400).json({ error }));
+};
