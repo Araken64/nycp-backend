@@ -27,19 +27,22 @@ describe('Testing the prisoners API', () => {
         dateOfFinalDischarge: Date.now(),
       }],
     });
-
     expect(res.status).toBe(201);
     expect(res.body.message).toBe('Object saved !');
   });
 
-  it('tests the PUT new prisoner route', async () => {
-    const res = await supertest(app).put('/api/prisoners').send({
-      prisonFileNumber: 'fakeNumber',
+  it('tests the PUT modified prisoner route', async () => {
+    const res = await supertest(app).put('/api/prisoners/fakeNumber').send({
       givenName: 'fakeGivenName2',
     });
-
     expect(res.status).toBe(200);
     expect(res.body.message).toBe('Object modified');
+  });
+
+  it('tests the DELETE prisoner route', async () => {
+    const res = await supertest(app).delete('/api/prisoners/fakeNumber').send();
+    expect(res.status).toBe(200);
+    expect(res.body.message).toBe('Object deleted');
   });
 
   afterAll(async () => {
