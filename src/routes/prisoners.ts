@@ -5,5 +5,7 @@ const router = express.Router();
 
 router.post('/', prisonersCtrl.createPrisoner);
 router.get('/', prisonersCtrl.getAllPrisoners);
+router.put('/:prisonFileNumber', prisonersCtrl.updatePrisoner);
+router.delete('/:prisonFileNumber', prisonersCtrl.deletePrisoner);
 
 export default router;
