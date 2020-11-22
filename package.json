@@ -4,8 +4,15 @@
   "description": "Back side for Penitentiary application",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "test": "jest build/__test__",
+    "start": "node build/server",
+    "tsc": "tsc -w",
+    "nodemon": "nodemon build/server",
+    "dev": "concurrently \"npm run tsc\" \"npm run nodemon\""
+  },
+  "jest": {
+    "verbose": true,
+    "testEnvironment": "node"
   },
   "repository": {
     "type": "git",
@@ -30,13 +37,18 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.9",
+    "@types/jest": "^26.0.15",
     "@types/mongoose": "^5.10.0",
     "@types/node": "^14.14.7",
+    "@types/supertest": "^2.0.10",
     "@typescript-eslint/eslint-plugin": "^4.7.0",
     "@typescript-eslint/parser": "^4.7.0",
+    "concurrently": "^5.3.0",
     "eslint": "^7.13.0",
     "eslint-config-airbnb-typescript": "^12.0.0",
     "eslint-plugin-import": "^2.22.1",
+    "jest": "^26.6.3",
+    "supertest": "^6.0.1",
     "typescript": "^4.0.5"
   }
 }
