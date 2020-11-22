@@ -18,7 +18,7 @@ export const getAllPrisoners = (req: Request, res: Response) => {
 
 export const updatePrisoner = (req: Request, res: Response) => {
   PrisonerModel.updateOne({ prisonFileNumber: req.params.prisonFileNumber },
-    { ...req.body, prisonFileNumber: req.params.prisonFileNumber, _id: req.params.id })
+    { ...req.body, prisonFileNumber: req.params.prisonFileNumber })
     .then(() => res.status(200).json({ message: 'Object modified' }))
     .catch((error) => res.status(400).json({ error }));
 };
