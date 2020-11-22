@@ -4,7 +4,7 @@
   "description": "Back side for Penitentiary application",
   "main": "server.js",
   "scripts": {
-    "test": "jest build/__test__",
+    "test": "jest build",
     "start": "node build/server",
     "tsc": "tsc -w",
     "nodemon": "nodemon build/server",
