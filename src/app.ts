@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 
 import casesRoutes from './routes/criminalcases';
 import prisonerRoutes from './routes/prisoners';
-import preventiveRoute from './routes/preventive';
+import actionsRoute from './routes/actions';
 
 mongoose.set('useCreateIndex', true);
 
@@ -28,6 +28,6 @@ app.use('/api/criminalcases', casesRoutes);
 
 app.use('/api/prisoners', prisonerRoutes);
 
-app.use('/api/preventive', preventiveRoute);
+app.use('/api/actions', actionsRoute);
 
 export default app;
