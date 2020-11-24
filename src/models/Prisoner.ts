@@ -1,5 +1,4 @@
 import { Schema, Document, model } from 'mongoose';
-import { CriminalCase } from './CriminalCase';
 
 const prisonerSchema: Schema = new Schema({
   prisonFileNumber: {
