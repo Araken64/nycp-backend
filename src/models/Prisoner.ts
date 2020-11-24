@@ -41,7 +41,7 @@ export interface Prisoner extends Document {
   dateOfIncarceration?: Date;
   motiveLabel: string;
   juridictionName: string;
-  criminalCase?: Array<string>;
+  criminalCase: Array<string>;
   decision?: Array<Decision>;
 }
 
