@@ -1,5 +1,13 @@
 import { Schema, Document, model } from 'mongoose';
 
+enum TypeDecision {
+  PRE = 'prevention',
+  INC = 'incarceration',
+  SEN = 'sentence',
+  FIN = 'final_discharge',
+  RED = 'sentence_reduction',
+}
+
 const prisonerSchema: Schema = new Schema({
   prisonFileNumber: {
     type: String, maxlength: 10, index: true, unique: true, required: true,
@@ -17,7 +25,12 @@ const prisonerSchema: Schema = new Schema({
     type: [
       {
         type: {
-          type: String, enum: ['prevention', 'incarceration', 'sentence', 'final_discharge', 'sentence_reduction'], required: true,
+          type: String,
+          enum: [
+            TypeDecision.PRE, TypeDecision.INC, TypeDecision.SEN,
+            TypeDecision.FIN, TypeDecision.RED,
+          ],
+          required: true,
         },
         dateOfDecision: { type: Date },
         duration: { type: Number, min: 0 },
@@ -27,11 +40,11 @@ const prisonerSchema: Schema = new Schema({
   },
 });
 
-export interface Decision extends Document {
-  type: string;
+export interface Decision {
+  type: TypeDecision;
   dateOfDecision: Date;
-  duration: number;
-  dateOfFinalDischarge: Date;
+  duration?: number;
+  dateOfFinalDischarge?: Date;
 }
 
 export interface Prisoner extends Document {
@@ -44,7 +57,7 @@ export interface Prisoner extends Document {
   motiveLabel: string;
   juridictionName: string;
   criminalCase: Array<string>;
-  decision?: Array<Decision>;
+  decision: Array<Decision>;
 }
 
 export default model<Prisoner>('PrisonerModel', prisonerSchema);
