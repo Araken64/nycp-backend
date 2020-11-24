@@ -16,6 +16,12 @@ export const getAllPrisoners = (req: Request, res: Response) => {
     .catch((error) => res.status(400).json({ error }));
 };
 
+export const getOnePrisoner = (req: Request, res: Response) => {
+  PrisonerModel.findOne({ prisonFileNumber: req.params.prisonFileNumber })
+    .then((prisoner) => res.status(200).json(prisoner))
+    .catch((error) => res.status(404).json({ error }));
+};
+
 export const updatePrisoner = (req: Request, res: Response) => {
   PrisonerModel.updateOne({ prisonFileNumber: req.params.prisonFileNumber },
     { ...req.body, prisonFileNumber: req.params.prisonFileNumber })
