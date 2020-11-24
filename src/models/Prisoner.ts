@@ -16,7 +16,9 @@ const prisonerSchema: Schema = new Schema({
   {
     type: [
       {
-        type: { type: String, maxlength: 1, required: true },
+        type: {
+          type: String, enum: ['prevention', 'incarceration', 'sentence', 'final_discharge', 'sentence_reduction'], required: true,
+        },
         dateOfDecision: { type: Date },
         duration: { type: Number, min: 0 },
         dateOfFinalDischarge: { type: Date },
