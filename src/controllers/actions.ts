@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import CriminalCaseModel, { CriminalCase } from '../models/CriminalCase';
 import PrisonerModel, {
-  Decision, Prisoner, TypeDecision, Sentence,
+  Prisoner, TypeDecision, Sentence, Incarceration, Prevention,
 } from '../models/Prisoner';
 
 const appendToCriminalCase = (prisoner: Prisoner, criminalCase: CriminalCase)
@@ -18,71 +18,120 @@ const appendToCriminalCase = (prisoner: Prisoner, criminalCase: CriminalCase)
   return Promise.all(promisesArray);
 };
 
-const addDecision = (prisoner: Prisoner, body: Decision) : Promise<Prisoner> => {
-  prisoner.decision.push({ ...body });
-  return prisoner.save();
+interface BodyReqInc {
+  decision : {
+    type: string,
+    dateOfDecision: string,
+  }
+  dateOfIncarceration: string,
+  motiveLabel: string,
+}
+
+interface ParsedBodyReqInc {
+  decision : Incarceration,
+  dateOfIncarceration : Date,
+  motiveLabel : string,
+}
+
+const isBodyReqInc = (body: any): body is ParsedBodyReqInc => {
+  const inc = body as BodyReqInc;
+
+  return inc && inc.decision && inc.decision.type === TypeDecision.INC
+    && !Number.isNaN(Date.parse(inc.decision.dateOfDecision))
+    && !Number.isNaN(Date.parse(inc.dateOfIncarceration))
+    && inc.motiveLabel !== undefined;
 };
 
 export const placeInIncarceration = (req: Request, res: Response) : void => {
-  const prisonerPromise = PrisonerModel.findOne({
-    prisonFileNumber: req.params.prisonFileNumber,
-  });
-  const criminalCasePromise = CriminalCaseModel.findOne({
-    criminalCaseNumber: req.params.criminalCaseNumber,
-  });
+  if (isBodyReqInc(req.body)) {
+    const reqBody :ParsedBodyReqInc = req.body;
+    const prisonerPromise = PrisonerModel.findOne({
+      prisonFileNumber: req.params.prisonFileNumber,
+    });
+    const criminalCasePromise = CriminalCaseModel.findOne({
+      criminalCaseNumber: req.params.criminalCaseNumber,
+    });
 
-  Promise.all([prisonerPromise, criminalCasePromise]).then((values) => {
-    if (values.every((value) => value)) {
-      const [prisoner, criminalCase] = [values[0]!, values[1]!];
-      const appendPromise = appendToCriminalCase(prisoner, criminalCase);
-      const decisionPromise = addDecision(prisoner, req.body);
-      Promise.all([appendPromise, decisionPromise])
-        .then(() => res.status(200).json({ message: `Prisoner ${prisoner.prisonFileNumber} is incarcerate for criminal case ${criminalCase.criminalCaseNumber}` }))
-        .catch((error) => res.status(400).json({ error }));
-    } else if (!values[0]) res.status(404).json({ error: 'Prisoner not found' });
-    else if (!values[1]) res.status(404).json({ error: 'CriminalCase not found' });
-  }).catch((error) => res.status(400).json({ error }));
+    Promise.all([prisonerPromise, criminalCasePromise]).then((values) => {
+      if (values.every((value) => value)) {
+        const [prisoner, criminalCase] = [values[0]!, values[1]!];
+        const appendPromise = appendToCriminalCase(prisoner, criminalCase);
+        prisoner.decision.push(reqBody.decision);
+        prisoner.dateOfIncarceration = reqBody.dateOfIncarceration;
+        prisoner.motiveLabel = reqBody.motiveLabel;
+        Promise.all([appendPromise, prisoner.save()])
+          .then(() => res.status(200).json({ message: `Prisoner ${prisoner.prisonFileNumber} is incarcerate for criminal case ${criminalCase.criminalCaseNumber}` }))
+          .catch((error) => res.status(400).json({ error }));
+      } else if (!values[0]) res.status(404).json({ error: 'Prisoner not found' });
+      else if (!values[1]) res.status(404).json({ error: 'CriminalCase not found' });
+    }).catch((error) => res.status(400).json({ error }));
+  } res.status(403).json({ error: `Request body ${req.body} is not conform to an Incarceration body` });
+};
+
+interface BodyReqPre {
+  decision : {
+    type: string,
+    dateOfDecision: string,
+  }
+}
+
+interface ParsedBodyReqPre { decision : Prevention }
+
+const isBodyReqPre = (body: any): body is ParsedBodyReqPre => {
+  const pre = body as BodyReqPre;
+
+  return pre && pre.decision && pre.decision.type === TypeDecision.PRE
+    && !Number.isNaN(Date.parse(pre.decision.dateOfDecision));
 };
 
 export const placeInPreventive = (req: Request, res: Response) : void => {
-  const prisonerPromise = PrisonerModel.findOne({
-    prisonFileNumber: req.params.prisonFileNumber,
-  });
-  const criminalCasePromise = CriminalCaseModel.findOne({
-    criminalCaseNumber: req.params.criminalCaseNumber,
-  });
+  if (isBodyReqPre(req.body)) {
+    const reqBody : ParsedBodyReqPre = req.body;
+    const prisonerPromise = PrisonerModel.findOne({
+      prisonFileNumber: req.params.prisonFileNumber,
+    });
+    const criminalCasePromise = CriminalCaseModel.findOne({
+      criminalCaseNumber: req.params.criminalCaseNumber,
+    });
 
-  Promise.all([prisonerPromise, criminalCasePromise]).then((values) => {
-    if (values.every((value) => value)) {
-      const [prisoner, criminalCase] = [values[0]!, values[1]!];
-      if (prisoner.decision.every((decision) => decision.type !== TypeDecision.INC)) {
-        const appendPromise = appendToCriminalCase(prisoner, criminalCase);
-        const decisionPromise = addDecision(prisoner, req.body);
-        Promise.all([appendPromise, decisionPromise])
-          .then(() => res.status(200).json({ message: `Prisoner ${prisoner.prisonFileNumber} is in preventive for criminal case ${criminalCase.criminalCaseNumber}` }))
-          .catch((error) => res.status(400).json({ error }));
-      } else res.status(403).json({ error: `Prisoner ${prisoner.prisonFileNumber} is already incarcerate, he cannot be in preventive` });
-    } else if (!values[0]) res.status(404).json({ error: 'Prisoner not found' });
-    else if (!values[1]) res.status(404).json({ error: 'CriminalCase not found' });
-  }).catch((error) => res.status(400).json({ error }));
+    Promise.all([prisonerPromise, criminalCasePromise]).then((values) => {
+      if (values.every((value) => value)) {
+        const [prisoner, criminalCase] = [values[0]!, values[1]!];
+        if (prisoner.decision.every((decision) => decision.type !== TypeDecision.INC)) {
+          const appendPromise = appendToCriminalCase(prisoner, criminalCase);
+          prisoner.decision.push(reqBody.decision);
+          Promise.all([appendPromise, prisoner.save()])
+            .then(() => res.status(200).json({ message: `Prisoner ${prisoner.prisonFileNumber} is in preventive for criminal case ${criminalCase.criminalCaseNumber}` }))
+            .catch((error) => res.status(400).json({ error }));
+        } else res.status(403).json({ error: `Prisoner ${prisoner.prisonFileNumber} is already incarcerate, he cannot be in preventive` });
+      } else if (!values[0]) res.status(404).json({ error: 'Prisoner not found' });
+      else if (!values[1]) res.status(404).json({ error: 'CriminalCase not found' });
+    }).catch((error) => res.status(400).json({ error }));
+  } else res.status(403).json({ error: `Request body ${req.body} is not conform to an Preventive body` });
 };
 
-const isSentence = (body: any): body is Sentence => {
-  interface BodySentence {
+interface BodyReqSen {
+  decision: {
     type: string,
     dateOfDecision: string,
     duration: string,
   }
+}
 
-  const stc = body as BodySentence;
-  return stc && stc.type === TypeDecision.SEN
-    && !Number.isNaN(parseInt(stc.duration, 10))
-    && !Number.isNaN(Date.parse(stc.dateOfDecision));
+interface ParsedBodyReqSen {
+  decision : Sentence,
+}
+
+const isBodyReqSen = (body: any): body is ParsedBodyReqSen => {
+  const stc = body as BodyReqSen;
+  return stc && stc.decision && stc.decision.type === TypeDecision.SEN
+    && !Number.isNaN(parseInt(stc.decision.duration, 10))
+    && !Number.isNaN(Date.parse(stc.decision.dateOfDecision));
 };
 
 export const addSentence = (req: Request, res: Response) => {
-  if (isSentence(req.body)) {
-    const sentence: Sentence = req.body;
+  if (isBodyReqSen(req.body)) {
+    const sentence: Sentence = req.body.decision;
     PrisonerModel.findOne({ prisonFileNumber: req.params.prisonFileNumber })
       .then((prisoner) => {
         if (prisoner) {
@@ -95,5 +144,5 @@ export const addSentence = (req: Request, res: Response) => {
             .catch((error) => res.status(400).json({ error }));
         } else res.status(404).json({ error: 'Prisoner not found' });
       }).catch((error) => res.status(400).json({ error }));
-  } else res.status(403).json({ error: `Request body ${req.body} is not conform to interface Sentence` });
+  } else res.status(403).json({ error: `Request body ${req.body} is not conform to a Sentence body` });
 };
