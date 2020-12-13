@@ -55,6 +55,7 @@ export interface Incarceration extends Decision{
 
 export interface Sentence extends Decision {
   type: TypeDecision.SEN;
+  duration: number;
 }
 
 export interface FinalDischarge extends Decision{
