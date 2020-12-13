@@ -1,7 +1,7 @@
 import supertest from 'supertest';
 import mongoose from 'mongoose';
 import app from '../app';
-import PrisonerModel from '../models/Prisoner';
+import PrisonerModel, { TypeDecision } from '../models/Prisoner';
 
 describe('Testing the prisoners API', () => {
   it('tests the GET all prisoners route', async () => {
@@ -21,7 +21,7 @@ describe('Testing the prisoners API', () => {
       juridictionName: 'fakeJuridictionName',
       criminalCase: ['fakeCriminalCase1', 'fakeCriminalCase2'],
       decision: [{
-        type: 'f',
+        type: TypeDecision.SEN,
         dateOfDecision: Date.now(),
         duration: 1,
         dateOfFinalDischarge: Date.now(),
