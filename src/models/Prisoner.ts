@@ -17,7 +17,7 @@ const prisonerSchema: Schema = new Schema({
   dateOfBirth: { type: Date, max: Date.now() },
   placeOfBirth: { type: String, maxlength: 30 },
   dateOfIncaceration: { type: Date },
-  motiveLabel: { type: String, maxlength: 50, required: true },
+  motiveLabel: { type: String, maxlength: 50 },
   juridictionName: { type: String, maxlength: 30, required: true },
   criminalCase: { type: [String], maxlength: 10 },
   decision:
