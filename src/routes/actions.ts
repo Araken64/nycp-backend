@@ -1,12 +1,12 @@
 import express from 'express';
-import { makeDecision, placeInJail } from '../controllers/actions';
+import { placeInPreventive, placeInIncarceration, addSentence } from '../controllers/actions';
 
 const router = express.Router();
 
-router.put('/incarcerer/:prisonFileNumber&:criminalCaseNumber', placeInJail);
-router.put('/preventive/:prisonFileNumber&:criminalCaseNumber', placeInJail);
-router.put('/sentence/:prisonFileNumber', makeDecision);
-router.put('/final_discharge/:prisonFileNumber', makeDecision);
-router.put('/sentence_reduction/:prisonFileNumber', makeDecision);
+router.put('/incarceration/:prisonFileNumber&:criminalCaseNumber', placeInIncarceration);
+router.put('/preventive/:prisonFileNumber&:criminalCaseNumber', placeInPreventive);
+router.put('/sentence/:prisonFileNumber', addSentence);
+router.put('/final_discharge/:prisonFileNumber', addSentence);
+router.put('/sentence_reduction/:prisonFileNumber', addSentence);
 
 export default router;
