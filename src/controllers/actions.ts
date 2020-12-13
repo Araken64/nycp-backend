@@ -1,14 +1,16 @@
 import { Request, Response } from 'express';
 import CriminalCaseModel, { CriminalCase } from '../models/CriminalCase';
 import PrisonerModel, {
-  Prisoner, TypeDecision, Sentence, Incarceration, Prevention,
+  Prisoner, TypeDecision, Sentence, Incarceration, Prevention, FinalDischarge, SentenceReduction,
 } from '../models/Prisoner';
 
+// only use for preventive and incarceration (define main criminal case)
 const appendToCriminalCase = (prisoner: Prisoner, criminalCase: CriminalCase)
   : Promise<(CriminalCase | Prisoner)[]> => {
   const promisesArray: Array<Promise<CriminalCase | Prisoner>> = [];
   if (!prisoner.criminalCase.includes(criminalCase.criminalCaseNumber)) {
-    prisoner.criminalCase.push(criminalCase.criminalCaseNumber);
+    // push to the beginning (= main criminal case)
+    prisoner.criminalCase.unshift(criminalCase.criminalCaseNumber);
     promisesArray.push(prisoner.save());
   }
   if (!criminalCase.prisoner.includes(prisoner.prisonFileNumber)) {
@@ -118,9 +120,7 @@ interface BodyReqSen {
   }
 }
 
-interface ParsedBodyReqSen {
-  decision : Sentence,
-}
+interface ParsedBodyReqSen { decision : Sentence }
 
 const isBodyReqSen = (body: any): body is ParsedBodyReqSen => {
   const stc = body as BodyReqSen;
@@ -138,11 +138,81 @@ export const addSentence = (req: Request, res: Response) => {
           prisoner.decision.push(sentence);
           prisoner.save()
             .then(() => {
-              const { type, dateOfDecision } = req.body;
+              const { type, dateOfDecision } = sentence;
               res.status(200).json({ message: `Decision of ${type} has been taken for Prisoner ${prisoner.prisonFileNumber} the ${dateOfDecision}` });
             })
             .catch((error) => res.status(400).json({ error }));
         } else res.status(404).json({ error: 'Prisoner not found' });
       }).catch((error) => res.status(400).json({ error }));
   } else res.status(403).json({ error: `Request body ${req.body} is not conform to a Sentence body` });
+};
+
+interface BodyReqFin {
+  decision: {
+    type: string,
+    dateOfDecision: string,
+    dateOfFinalDischarge: string,
+  }
+}
+
+interface ParsedBodyReqFin { decision : FinalDischarge }
+
+const isBodyReqFin = (body: any): body is ParsedBodyReqFin => {
+  const fin = body as BodyReqFin;
+  return fin && fin.decision && fin.decision.type === TypeDecision.FIN
+    && !Number.isNaN(Date.parse(fin.decision.dateOfDecision))
+    && !Number.isNaN(Date.parse(fin.decision.dateOfFinalDischarge));
+};
+
+export const addFinalDischarge = (req: Request, res: Response) => {
+  if (isBodyReqFin(req.body)) {
+    const finalDisc: FinalDischarge = req.body.decision;
+    PrisonerModel.findOne({ prisonFileNumber: req.params.prisonFileNumber })
+      .then((prisoner) => {
+        if (prisoner) {
+          prisoner.decision.push(finalDisc);
+          prisoner.save()
+            .then(() => {
+              const { type, dateOfDecision } = finalDisc;
+              res.status(200).json({ message: `Decision of ${type} has been taken for Prisoner ${prisoner.prisonFileNumber} the ${dateOfDecision}` });
+            })
+            .catch((error) => res.status(400).json({ error }));
+        } else res.status(404).json({ error: 'Prisoner not found' });
+      }).catch((error) => res.status(400).json({ error }));
+  } else res.status(403).json({ error: `Request body ${req.body} is not conform to a Final Discharge body` });
+};
+
+interface BodyReqRed {
+  decision: {
+    type: string,
+    dateOfDecision: string,
+    duration: string,
+  }
+}
+
+interface ParsedBodyReqRed { decision : SentenceReduction }
+
+const isBodyReqRed = (body: any): body is ParsedBodyReqRed => {
+  const red = body as BodyReqRed;
+  return red && red.decision && red.decision.type === TypeDecision.RED
+    && !Number.isNaN(Date.parse(red.decision.dateOfDecision))
+    && !Number.isNaN(parseInt(red.decision.duration, 10));
+};
+
+export const addSentenceReduction = (req: Request, res: Response) => {
+  if (isBodyReqRed(req.body)) {
+    const sentReduc: SentenceReduction = req.body.decision;
+    PrisonerModel.findOne({ prisonFileNumber: req.params.prisonFileNumber })
+      .then((prisoner) => {
+        if (prisoner) {
+          prisoner.decision.push(sentReduc);
+          prisoner.save()
+            .then(() => {
+              const { type, dateOfDecision } = sentReduc;
+              res.status(200).json({ message: `Decision of ${type} has been taken for Prisoner ${prisoner.prisonFileNumber} the ${dateOfDecision}` });
+            })
+            .catch((error) => res.status(400).json({ error }));
+        } else res.status(404).json({ error: 'Prisoner not found' });
+      }).catch((error) => res.status(400).json({ error }));
+  } else res.status(403).json({ error: `Request body ${req.body} is not conform to a Sentence Reduction body` });
 };
