@@ -16,9 +16,6 @@ describe('Testing the 5 operations', () => {
     });
     const res2 = await await supertest(app).post('api/criminalcases').send({
       criminalCaseNumber: 'fakeCriminalCaseNumber',
-      juridictionName: 'fakeJuridiction',
-      dateOfCriminalCase: Date.now(),
-      prisoner: ['testPrisoner1, testPrisoner2'],
     });
     expect(res1.status).toBe(201);
     expect(res1.body.message).toBe('Object saved !');
