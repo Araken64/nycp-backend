@@ -1,6 +1,6 @@
 import { Schema, Document, model } from 'mongoose';
 
-enum TypeDecision {
+export enum TypeDecision {
   PRE = 'prevention',
   INC = 'incarceration',
   SEN = 'sentence',
@@ -43,8 +43,28 @@ const prisonerSchema: Schema = new Schema({
 export interface Decision {
   type: TypeDecision;
   dateOfDecision: Date;
-  duration?: number;
-  dateOfFinalDischarge?: Date;
+}
+
+export interface Prevention extends Decision{
+  type: TypeDecision.PRE;
+}
+
+export interface Incarceration extends Decision{
+  type: TypeDecision.INC;
+}
+
+export interface Sentence extends Decision {
+  type: TypeDecision.SEN;
+}
+
+export interface FinalDischarge extends Decision{
+  type: TypeDecision.FIN;
+  dateOfFinalDischarge: Date;
+}
+
+export interface SentenceReduction extends Decision{
+  type: TypeDecision.RED;
+  duration: number;
 }
 
 export interface Prisoner extends Document {
