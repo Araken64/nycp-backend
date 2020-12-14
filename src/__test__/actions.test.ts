@@ -6,24 +6,30 @@ import CriminalCaseModel from '../models/CriminalCase';
 
 describe('Testing the 5 operations', () => {
   beforeAll(async () => {
-    const res1 = await supertest(app).post('/api/prisoners').send({
-      prisonFileNumber: 'fakePrisonFileNumber',
+    await new PrisonerModel({
+      prisonFileNumber: 'PR_ACT_OK',
       givenName: 'fakeGivenName',
       surname: 'fakeSurname',
       dateOfBirth: new Date('September 22, 2018 15:00:00'),
       placeOfBirth: 'fakePlaceOfBirth',
       juridictionName: 'fakeJuridictionName',
+    }).save();
+
+    await new CriminalCaseModel({
+      criminalCaseNumber: 'CC_ACT_OK',
+    }).save();
+  });
+  it('tests the PREVENTIVE route with right values', async () => {
+    const response = await supertest(app).put('/api/actions/preventive/PR_ACT_OK&CC_ACT_OK').send({
+      decision: {
+        type: TypeDecision.PRE,
+        dateOfDecision: new Date('November 14, 2019 17:00:00'),
+      },
     });
-    const res2 = await await supertest(app).post('api/criminalcases').send({
-      criminalCaseNumber: 'fakeCriminalCaseNumber',
-    });
-    expect(res1.status).toBe(201);
-    expect(res1.body.message).toBe('Object saved !');
-    expect(res2.status).toBe(201);
-    expect(res2.body.message).toBe('Object saved !');
+    expect(response.status).toBe(200);
   });
   it('tests the INCARCERATION route with right values', async () => {
-    const response = await supertest(app).put('/api/incarceration/fakePrisonFileNumber&fakeCriminalCaseNumber').send({
+    const response = await supertest(app).put('/api/actions/incarceration/PR_ACT_OK&CC_ACT_OK').send({
       decision: {
         type: TypeDecision.INC,
         dateOfDecision: new Date('November 14, 2019 17:00:00'),
@@ -33,17 +39,8 @@ describe('Testing the 5 operations', () => {
     });
     expect(response.status).toBe(200);
   });
-  it('tests the PREVENTIVE route with right values', async () => {
-    const response = await supertest(app).put('/api/preventive/fakePrisonFileNumber&fakeCriminalCaseNumber').send({
-      decision: {
-        type: TypeDecision.PRE,
-        dateOfDecision: new Date('November 14, 2019 17:00:00'),
-      },
-    });
-    expect(response.status).toBe(200);
-  });
   it('tests the SENTENCE route with right values', async () => {
-    const response = await supertest(app).put('/api/sentence/fakePrisonFileNumber').send({
+    const response = await supertest(app).put('/api/actions/sentence/PR_ACT_OK').send({
       decision: {
         type: TypeDecision.SEN,
         dateOfDecision: new Date('November 14, 2019 17:00:00'),
@@ -53,7 +50,7 @@ describe('Testing the 5 operations', () => {
     expect(response.status).toBe(200);
   });
   it('tests the FINAL DISCHARGE route with right values', async () => {
-    const response = await supertest(app).put('/api/final_discharge/fakePrisonFileNumber').send({
+    const response = await supertest(app).put('/api/actions/final_discharge/PR_ACT_OK').send({
       decision: {
         type: TypeDecision.FIN,
         dateOfDecision: new Date('November 14, 2019 17:00:00'),
@@ -63,7 +60,7 @@ describe('Testing the 5 operations', () => {
     expect(response.status).toBe(200);
   });
   it('tests the SENTENCE REDUCTION route with right values', async () => {
-    const response = await supertest(app).put('/api/sentence_reduction/fakePrisonFileNumber').send({
+    const response = await supertest(app).put('/api/actions/sentence_reduction/PR_ACT_OK').send({
       decision: {
         type: TypeDecision.RED,
         dateOfDecision: new Date('November 14, 2019 17:00:00'),
@@ -73,12 +70,14 @@ describe('Testing the 5 operations', () => {
     expect(response.status).toBe(200);
   });
   afterAll(async () => {
-    await CriminalCaseModel.deleteOne({
-      criminalCaseNumber: 'fakeCriminalCaseNumber',
-    });
-    await PrisonerModel.deleteOne({
-      prisonFileNumber: 'fakePrisonFileNumber',
-    });
+    const result = await CriminalCaseModel.deleteOne({
+      criminalCaseNumber: 'PR_ACT_OK',
+    }).then(() => console.log('criminalCase Deleted')).catch(() => console.log('error'));
+    const res = await PrisonerModel.deleteOne({
+      prisonFileNumber: 'CC_ACT_OK',
+    }).then(() => console.log('prisoner Deleted')).catch(() => console.log('error'));
+    console.log(result);
+    console.log(res);
     mongoose.disconnect();
   });
 });
