@@ -11,7 +11,7 @@ describe('Testing the prisoners API', () => {
 
   it('tests the POST new prisoner route', async () => {
     const res = await supertest(app).post('/api/prisoners').send({
-      prisonFileNumber: 'fakeNumber',
+      prisonFileNumber: 'PR_PO_OK',
       givenName: 'fakeGivenName',
       surname: 'fakeSurname',
       dateOfBirth: new Date('September 22, 2018 15:00:00'), // Date.now() does not work (time difference ?)
@@ -19,7 +19,7 @@ describe('Testing the prisoners API', () => {
       dateOfIncaceration: Date.now(),
       motiveLabel: 'fakeMotiveLabel',
       juridictionName: 'fakeJuridictionName',
-      criminalCase: ['fakeCriminalCase1', 'fakeCriminalCase2'],
+      criminalCase: ['CC_FAKE_1', 'CC_FAKE_2'],
       decision: [{
         type: TypeDecision.SEN,
         dateOfDecision: Date.now(),
@@ -32,7 +32,7 @@ describe('Testing the prisoners API', () => {
   });
 
   it('tests the PUT modified prisoner route', async () => {
-    const res = await supertest(app).put('/api/prisoners/fakeNumber').send({
+    const res = await supertest(app).put('/api/prisoners/PR_PO_OK').send({
       givenName: 'fakeGivenName2',
     });
     expect(res.status).toBe(200);
@@ -40,14 +40,14 @@ describe('Testing the prisoners API', () => {
   });
 
   it('tests the DELETE prisoner route', async () => {
-    const res = await supertest(app).delete('/api/prisoners/fakeNumber').send();
+    const res = await supertest(app).delete('/api/prisoners/PR_PO_OK').send();
     expect(res.status).toBe(200);
     expect(res.body.message).toBe('Object deleted');
   });
 
   afterAll(async () => {
     await PrisonerModel.deleteOne({
-      prisonFileNumber: 'fakeNumber',
+      prisonFileNumber: 'PR_PO_OK',
     });
     mongoose.disconnect();
   });
