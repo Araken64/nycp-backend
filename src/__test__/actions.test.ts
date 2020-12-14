@@ -1,23 +1,22 @@
 import supertest from 'supertest';
 import mongoose from 'mongoose';
 import app from '../app';
-import PrisonerModel, { TypeDecision } from '../models/Prisoner';
-import CriminalCaseModel from '../models/CriminalCase';
+import PrisonerModel, { Prisoner, TypeDecision } from '../models/Prisoner';
+import CriminalCaseModel, { CriminalCase } from '../models/CriminalCase';
 
 describe('Testing the 5 operations', () => {
   beforeAll(async () => {
-    await new PrisonerModel({
+    const pr:Prisoner = new PrisonerModel({
       prisonFileNumber: 'PR_ACT_OK',
       givenName: 'fakeGivenName',
       surname: 'fakeSurname',
       dateOfBirth: new Date('September 22, 2018 15:00:00'),
       placeOfBirth: 'fakePlaceOfBirth',
       juridictionName: 'fakeJuridictionName',
-    }).save();
+    });
+    const cc:CriminalCase = new CriminalCaseModel({ criminalCaseNumber: 'CC_ACT_OK' });
 
-    await new CriminalCaseModel({
-      criminalCaseNumber: 'CC_ACT_OK',
-    }).save();
+    await Promise.all([pr.save(), cc.save()]);
   });
   it('tests the PREVENTIVE route with right values', async () => {
     const response = await supertest(app).put('/api/actions/preventive/PR_ACT_OK&CC_ACT_OK').send({
@@ -70,14 +69,10 @@ describe('Testing the 5 operations', () => {
     expect(response.status).toBe(200);
   });
   afterAll(async () => {
-    const result = await CriminalCaseModel.deleteOne({
-      criminalCaseNumber: 'PR_ACT_OK',
-    }).then(() => console.log('criminalCase Deleted')).catch(() => console.log('error'));
-    const res = await PrisonerModel.deleteOne({
-      prisonFileNumber: 'CC_ACT_OK',
-    }).then(() => console.log('prisoner Deleted')).catch(() => console.log('error'));
-    console.log(result);
-    console.log(res);
+    const promisePr = PrisonerModel.deleteOne({ prisonFileNumber: 'PR_ACT_OK' });
+    const promiseCc = CriminalCaseModel.deleteOne({ criminalCaseNumber: 'CC_ACT_OK' });
+    await Promise.all([promisePr, promiseCc]);
+
     mongoose.disconnect();
   });
 });
