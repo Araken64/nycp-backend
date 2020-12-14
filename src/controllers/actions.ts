@@ -4,22 +4,6 @@ import PrisonerModel, {
   Prisoner, TypeDecision, Sentence, Incarceration, Prevention, FinalDischarge, SentenceReduction,
 } from '../models/Prisoner';
 
-// only use for preventive and incarceration (define main criminal case)
-const appendToCriminalCase = (prisoner: Prisoner, criminalCase: CriminalCase)
-  : Promise<(CriminalCase | Prisoner)[]> => {
-  const promisesArray: Array<Promise<CriminalCase | Prisoner>> = [];
-  if (!prisoner.criminalCase.includes(criminalCase.criminalCaseNumber)) {
-    // push to the beginning (= main criminal case)
-    prisoner.criminalCase.unshift(criminalCase.criminalCaseNumber);
-    promisesArray.push(prisoner.save());
-  }
-  if (!criminalCase.prisoner.includes(prisoner.prisonFileNumber)) {
-    criminalCase.prisoner.push(prisoner.prisonFileNumber);
-    promisesArray.push(criminalCase.save());
-  }
-  return Promise.all(promisesArray);
-};
-
 interface BodyReqInc {
   decision : {
     type: string,
@@ -37,7 +21,6 @@ interface ParsedBodyReqInc {
 
 const isBodyReqInc = (body: any): body is ParsedBodyReqInc => {
   const inc = body as BodyReqInc;
-
   return inc && inc.decision && inc.decision.type === TypeDecision.INC
     && !Number.isNaN(Date.parse(inc.decision.dateOfDecision))
     && !Number.isNaN(Date.parse(inc.dateOfIncarceration))
@@ -57,17 +40,21 @@ export const placeInIncarceration = (req: Request, res: Response) : void => {
     Promise.all([prisonerPromise, criminalCasePromise]).then((values) => {
       if (values.every((value) => value)) {
         const [prisoner, criminalCase] = [values[0]!, values[1]!];
-        const appendPromise = appendToCriminalCase(prisoner, criminalCase);
+        if (!prisoner.criminalCase.includes(criminalCase.criminalCaseNumber)) {
+          prisoner.criminalCase.unshift(criminalCase.criminalCaseNumber);
+        }
+        if (!criminalCase.prisoner.includes(prisoner.prisonFileNumber)) {
+          criminalCase.prisoner.push(prisoner.prisonFileNumber);
+        }
         prisoner.decision.push(reqBody.decision);
         prisoner.dateOfIncarceration = reqBody.dateOfIncarceration;
-        prisoner.motiveLabel = reqBody.motiveLabel;
-        Promise.all([appendPromise, prisoner.save()])
+        Promise.all([prisoner.save(), criminalCase.save()])
           .then(() => res.status(200).json({ message: `Prisoner ${prisoner.prisonFileNumber} is incarcerate for criminal case ${criminalCase.criminalCaseNumber}` }))
           .catch((error) => res.status(400).json({ error }));
       } else if (!values[0]) res.status(404).json({ error: 'Prisoner not found' });
       else if (!values[1]) res.status(404).json({ error: 'CriminalCase not found' });
     }).catch((error) => res.status(400).json({ error }));
-  } res.status(403).json({ error: `Request body ${req.body} is not conform to an Incarceration body` });
+  } else res.status(403).json({ error: `Request body ${req.body} is not conform to an Incarceration body` });
 };
 
 interface BodyReqPre {
@@ -81,7 +68,6 @@ interface ParsedBodyReqPre { decision : Prevention }
 
 const isBodyReqPre = (body: any): body is ParsedBodyReqPre => {
   const pre = body as BodyReqPre;
-
   return pre && pre.decision && pre.decision.type === TypeDecision.PRE
     && !Number.isNaN(Date.parse(pre.decision.dateOfDecision));
 };
@@ -100,9 +86,14 @@ export const placeInPreventive = (req: Request, res: Response) : void => {
       if (values.every((value) => value)) {
         const [prisoner, criminalCase] = [values[0]!, values[1]!];
         if (prisoner.decision.every((decision) => decision.type !== TypeDecision.INC)) {
-          const appendPromise = appendToCriminalCase(prisoner, criminalCase);
+          if (!prisoner.criminalCase.includes(criminalCase.criminalCaseNumber)) {
+            prisoner.criminalCase.unshift(criminalCase.criminalCaseNumber);
+          }
+          if (!criminalCase.prisoner.includes(prisoner.prisonFileNumber)) {
+            criminalCase.prisoner.push(prisoner.prisonFileNumber);
+          }
           prisoner.decision.push(reqBody.decision);
-          Promise.all([appendPromise, prisoner.save()])
+          Promise.all([prisoner.save(), criminalCase.save()])
             .then(() => res.status(200).json({ message: `Prisoner ${prisoner.prisonFileNumber} is in preventive for criminal case ${criminalCase.criminalCaseNumber}` }))
             .catch((error) => res.status(400).json({ error }));
         } else res.status(403).json({ error: `Prisoner ${prisoner.prisonFileNumber} is already incarcerate, he cannot be in preventive` });
