@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import CriminalCaseModel, { CriminalCase } from '../models/CriminalCase';
+import CriminalCaseModel from '../models/CriminalCase';
 import PrisonerModel, {
-  Prisoner, TypeDecision, Sentence, Incarceration, Prevention, FinalDischarge, SentenceReduction,
+  TypeDecision, Sentence, Incarceration, Prevention, FinalDischarge, SentenceReduction,
 } from '../models/Prisoner';
 
 interface BodyReqInc {
