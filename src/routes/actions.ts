@@ -1,6 +1,6 @@
 import express from 'express';
-import { 
-  placeInPreventive, placeInIncarceration, addSentence, addFinalDischarge, addSentenceReduction
+import {
+  placeInPreventive, placeInIncarceration, addSentence, addFinalDischarge, addSentenceReduction,
 } from '../controllers/actions';
 
 const router = express.Router();
