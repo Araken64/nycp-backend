@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import CriminalCaseModel from '../models/CriminalCase';
 import PrisonerModel, { Prisoner } from '../models/Prisoner';
 
 export const createPrisoner = (req: Request, res: Response) => {
@@ -23,14 +24,28 @@ export const getOnePrisoner = (req: Request, res: Response) => {
 };
 
 export const updatePrisoner = (req: Request, res: Response) => {
-  PrisonerModel.updateOne({ prisonFileNumber: req.params.prisonFileNumber },
-    { ...req.body, prisonFileNumber: req.params.prisonFileNumber })
-    .then(() => res.status(200).json({ message: 'Object modified' }))
-    .catch((error) => res.status(400).json({ error }));
+  PrisonerModel.findOneAndUpdate({ prisonFileNumber: req.params.prisonFileNumber },
+    { ...req.body }).then((pr:Prisoner|null) => {
+    if (pr) {
+      if (req.body.prisonFileNumber && req.body.prisonFileNumber !== pr.prisonFileNumber) {
+        CriminalCaseModel.updateMany({ prisoner: pr.prisonFileNumber },
+          { $set: { 'prisoner.$': req.body.prisonFileNumber } })
+          .then(() => res.status(200).json({ message: 'Prisoner modified and references updated !' }))
+          .catch((error) => res.status(400).json({ error }));
+      } else res.status(200).json({ message: 'Prisoner modified !' });
+    } else res.status(404).json({ error: 'Prisoner not found' });
+  }).catch((error) => res.status(400).json({ error }));
 };
 
 export const deletePrisoner = (req: Request, res: Response) => {
-  PrisonerModel.deleteOne({ prisonFileNumber: req.params.prisonFileNumber })
-    .then(() => res.status(200).json({ message: 'Object deleted' }))
-    .catch((error) => res.status(400).json({ error }));
+  PrisonerModel.findOneAndDelete({
+    prisonFileNumber: req.params.prisonFileNumber,
+  }).then((pr:Prisoner|null) => {
+    if (pr) {
+      CriminalCaseModel.updateMany({ prisoner: pr.prisonFileNumber },
+        { $pull: { prisoner: pr.prisonFileNumber } })
+        .then(() => res.status(200).json({ message: 'Prisoner deleted and references updated !' }))
+        .catch((error) => res.status(400).json({ error }));
+    } else res.status(404).json({ error: 'Prisoner not found' });
+  }).catch((error) => res.status(400).json({ error }));
 };
