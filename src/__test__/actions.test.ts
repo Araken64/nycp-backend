@@ -18,6 +18,7 @@ describe('Testing the 5 operations', () => {
 
     await Promise.all([pr.save(), cc.save()]);
   });
+
   it('tests the PREVENTIVE route with right values', async () => {
     const response = await supertest(app).put('/api/actions/preventive/PR_ACT_OK&CC_ACT_OK').send({
       decision: {
@@ -27,6 +28,17 @@ describe('Testing the 5 operations', () => {
     });
     expect(response.status).toBe(200);
   });
+
+  it('tests the impossibilty to add two times a prisoner in PREVENTIVE', async () => {
+    const response = await supertest(app).put('/api/actions/preventive/PR_ACT_OK&CC_ACT_OK').send({
+      decision: {
+        type: TypeDecision.PRE,
+        dateOfDecision: new Date('November 19, 2019 17:00:00'),
+      },
+    });
+    expect(response.status).toBe(403);
+  });
+
   it('tests the INCARCERATION route with right values', async () => {
     const response = await supertest(app).put('/api/actions/incarceration/PR_ACT_OK&CC_ACT_OK').send({
       decision: {
@@ -38,6 +50,17 @@ describe('Testing the 5 operations', () => {
     });
     expect(response.status).toBe(200);
   });
+
+  it('tests the impossibilty to incarcerate two times a prisoner', async () => {
+    const response = await supertest(app).put('/api/actions/preventive/PR_ACT_OK&CC_ACT_OK').send({
+      decision: {
+        type: TypeDecision.INC,
+        dateOfDecision: new Date('November 19, 2019 17:00:00'),
+      },
+    });
+    expect(response.status).toBe(403);
+  });
+
   it('tests the SENTENCE route with right values', async () => {
     const response = await supertest(app).put('/api/actions/sentence/PR_ACT_OK').send({
       decision: {
@@ -48,6 +71,7 @@ describe('Testing the 5 operations', () => {
     });
     expect(response.status).toBe(200);
   });
+
   it('tests the FINAL DISCHARGE route with right values', async () => {
     const response = await supertest(app).put('/api/actions/final_discharge/PR_ACT_OK').send({
       decision: {
@@ -58,6 +82,7 @@ describe('Testing the 5 operations', () => {
     });
     expect(response.status).toBe(200);
   });
+
   it('tests the SENTENCE REDUCTION route with right values', async () => {
     const response = await supertest(app).put('/api/actions/sentence_reduction/PR_ACT_OK').send({
       decision: {
@@ -68,6 +93,18 @@ describe('Testing the 5 operations', () => {
     });
     expect(response.status).toBe(200);
   });
+
+  it('tests to impossibilty to give a decision of same type the same day for a prisoner', async () => {
+    const response = await supertest(app).put('/api/actions/sentence_reduction/PR_ACT_OK').send({
+      decision: {
+        type: TypeDecision.RED,
+        dateOfDecision: new Date('November 14, 2019 20:00:00'),
+        duration: 15,
+      },
+    });
+    expect(response.status).toBe(403);
+  });
+
   afterAll(async () => {
     const promisePr = PrisonerModel.deleteOne({ prisonFileNumber: 'PR_ACT_OK' });
     const promiseCc = CriminalCaseModel.deleteOne({ criminalCaseNumber: 'CC_ACT_OK' });
