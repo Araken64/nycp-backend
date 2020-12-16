@@ -28,7 +28,27 @@ describe('Testing the prisoners API', () => {
       }],
     });
     expect(res.status).toBe(201);
-    expect(res.body.message).toBe('Object saved !');
+  });
+
+  it('tests the GET one prisoner route', async () => {
+    const res = await supertest(app).get('/api/prisoners/PR_PO_OK');
+    expect(res.status).toBe(200);
+  });
+
+  it('tests the POST new prisoner route with already existed number', async () => {
+    const response = await supertest(app).post('/api/prisoners').send({
+      prisonFileNumber: 'PR_PO_OK',
+    });
+
+    expect(response.status).toBe(400);
+  });
+
+  it('tests the POST new prisoner route with wrong body', async () => {
+    const response = await supertest(app).post('/api/criminalcases').send({
+      juridictionName: 'fakeJuridiction',
+    });
+
+    expect(response.status).toBe(403);
   });
 
   it('tests the PUT modified prisoner route', async () => {
@@ -36,13 +56,11 @@ describe('Testing the prisoners API', () => {
       givenName: 'fakeGivenName2',
     });
     expect(res.status).toBe(200);
-    expect(res.body.message).toBe('Object modified');
   });
 
   it('tests the DELETE prisoner route', async () => {
     const res = await supertest(app).delete('/api/prisoners/PR_PO_OK').send();
     expect(res.status).toBe(200);
-    expect(res.body.message).toBe('Object deleted');
   });
 
   afterAll(async () => {
